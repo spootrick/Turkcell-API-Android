@@ -1,6 +1,7 @@
 package com.example.furkan.turkcellapi;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -13,7 +14,14 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+import com.nostra13.universalimageloader.core.assist.FailReason;
+import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -32,6 +40,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity{
 
     private ListView lv_articles;
+    private ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,8 +50,28 @@ public class MainActivity extends AppCompatActivity{
         // initializing our widgets
         initializeWidgets();
 
+        // initialize imageloader
+        initializeImageLoader();
+
         // initializing our app
         new JSONTask().execute("https://gelecegiyazanlar.turkcell.com.tr/gypservis/article/retrieve&kategoriID=718");
+    }
+
+    private void initializeImageLoader() {
+        // --- image loader from github ---
+        // https://github.com/nostra13/Android-Universal-Image-Loader/wiki/Quick-Setup
+        // Create default options which will be used for every
+        //  displayImage(...) call if no options will be passed to this method
+        DisplayImageOptions defaultOptions = new DisplayImageOptions.Builder()
+                .cacheInMemory(true)
+                .cacheOnDisk(true)
+                .showImageForEmptyUri(android.R.drawable.ic_menu_report_image) // resource or drawable
+                .showImageOnFail(android.R.drawable.ic_menu_report_image) // resource or drawable
+                .build();
+        ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(getApplicationContext())
+                .defaultDisplayImageOptions(defaultOptions)
+                .build();
+        ImageLoader.getInstance().init(config); // Do it on Application start
     }
 
     /**
@@ -174,8 +203,31 @@ public class MainActivity extends AppCompatActivity{
 
             thumbnail = (ImageView) convertView.findViewById(R.id.thumbnail);
             txt_title = (TextView) convertView.findViewById(R.id.txt_title);
+            progressBar = (ProgressBar) convertView.findViewById(R.id.progressBar);
 
             txt_title.setText(articleList.get(position).getTitle());
+
+            ImageLoader.getInstance().displayImage(articleList.get(position).getThumbnail(), thumbnail, new ImageLoadingListener() {
+                @Override
+                public void onLoadingStarted(String imageUri, View view) {
+                    progressBar.setVisibility(View.VISIBLE);
+                }
+
+                @Override
+                public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
+                    progressBar.setVisibility(View.GONE);
+                }
+
+                @Override
+                public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+                    progressBar.setVisibility(View.GONE);
+                }
+
+                @Override
+                public void onLoadingCancelled(String imageUri, View view) {
+                    progressBar.setVisibility(View.GONE);
+                }
+            });
 
             return convertView;
         }
