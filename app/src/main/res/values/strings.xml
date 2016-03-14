@@ -1,4 +1,4 @@
 <resources>
     <string name="app_name">TurkcellAPI</string>
-    <string name="action_refresh">Refresh</string>
+    <string name="action_refresh">Yenile</string>
 </resources>

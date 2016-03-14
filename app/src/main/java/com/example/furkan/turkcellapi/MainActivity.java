@@ -1,6 +1,8 @@
 package com.example.furkan.turkcellapi;
 
+import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
@@ -10,8 +12,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -41,6 +43,9 @@ public class MainActivity extends AppCompatActivity{
 
     private ListView lv_articles;
     private ProgressBar progressBar;
+    private ProgressDialog dialog;
+
+    private List<Article> articleList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,10 +58,13 @@ public class MainActivity extends AppCompatActivity{
         // initialize imageloader
         initializeImageLoader();
 
-        // initializing our app
+        // initializing our app from the url
         new JSONTask().execute("https://gelecegiyazanlar.turkcell.com.tr/gypservis/article/retrieve&kategoriID=718");
     }
 
+    /**
+     * This method initializes the imageloader
+     */
     private void initializeImageLoader() {
         // --- image loader from github ---
         // https://github.com/nostra13/Android-Universal-Image-Loader/wiki/Quick-Setup
@@ -79,6 +87,12 @@ public class MainActivity extends AppCompatActivity{
      */
     public void initializeWidgets(){
         lv_articles = (ListView) findViewById(R.id.lv_articles);
+
+        // loading dialog
+        dialog = new ProgressDialog(this);
+        dialog.setIndeterminate(true);
+        dialog.setCancelable(false);
+        dialog.setMessage("Başlıklar yükleniyor...");
     }
 
 
@@ -87,6 +101,15 @@ public class MainActivity extends AppCompatActivity{
      * UI by using async task.
      */
     public class JSONTask extends AsyncTask<String, String, List<Article> >{
+
+        /**
+         * This method runs just before the background work
+         */
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            dialog.show();
+        }
 
         /**
          * Background work
@@ -170,8 +193,20 @@ public class MainActivity extends AppCompatActivity{
         protected void onPostExecute(List<Article> result) {
             super.onPostExecute(result);
 
+            // closing the loading dialog
+            dialog.dismiss();
+
             ArticleAdapter adapter = new ArticleAdapter(getApplicationContext(), R.layout.row, result);
             lv_articles.setAdapter(adapter);
+            lv_articles.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    Intent intent = new Intent(getApplicationContext(), DetailActivity.class);
+                    intent.putExtra("id", articleList.get(position).getId());
+                    intent.putExtra("title", articleList.get(position).getTitle());
+                    startActivity(intent);
+                }
+            });
         }
     }
 
@@ -180,7 +215,7 @@ public class MainActivity extends AppCompatActivity{
      */
     public class ArticleAdapter extends ArrayAdapter{
 
-        private List<Article> articleList;
+
         private int resource;
         private LayoutInflater inflater;
 
@@ -202,11 +237,12 @@ public class MainActivity extends AppCompatActivity{
             TextView txt_title;
 
             thumbnail = (ImageView) convertView.findViewById(R.id.thumbnail);
-            txt_title = (TextView) convertView.findViewById(R.id.txt_title);
+            txt_title = (TextView) convertView.findViewById(R.id.tv_title);
             progressBar = (ProgressBar) convertView.findViewById(R.id.progressBar);
 
             txt_title.setText(articleList.get(position).getTitle());
 
+            // handling loading animations on images
             ImageLoader.getInstance().displayImage(articleList.get(position).getThumbnail(), thumbnail, new ImageLoadingListener() {
                 @Override
                 public void onLoadingStarted(String imageUri, View view) {
