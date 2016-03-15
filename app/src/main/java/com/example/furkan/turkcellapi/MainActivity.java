@@ -4,6 +4,8 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -18,6 +20,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -58,8 +61,13 @@ public class MainActivity extends AppCompatActivity{
         // initialize imageloader
         initializeImageLoader();
 
-        // initializing our app from the url
-        new JSONTask().execute("https://gelecegiyazanlar.turkcell.com.tr/gypservis/article/retrieve&kategoriID=718");
+        // checking the internet connectivity
+        if(isNetworkAvailable()){
+            // initializing our app from the url
+            new JSONTask().execute("https://gelecegiyazanlar.turkcell.com.tr/gypservis/article/retrieve&kategoriID=718");
+        }else{
+            Toast.makeText(this, "Lütfen internet bağlantınızı kontrol edin.", Toast.LENGTH_LONG).show();
+        }
     }
 
     /**
@@ -288,13 +296,31 @@ public class MainActivity extends AppCompatActivity{
      */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+
         int id = item.getItemId();
 
         if (id == R.id.action_refresh) {
-            new JSONTask().execute("https://gelecegiyazanlar.turkcell.com.tr/gypservis/article/retrieve&kategoriID=718");
+            // checking the internet connectivity
+            if(isNetworkAvailable()){
+                new JSONTask().execute("https://gelecegiyazanlar.turkcell.com.tr/gypservis/article/retrieve&kategoriID=718");
+            }else{
+                Toast.makeText(this, "Lütfen internet bağlantınızı kontrol edin.", Toast.LENGTH_LONG).show();
+            }
+
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * This methods checks the device network availability.
+     *
+     * @return true if device is connected to the internet
+     */
+    public boolean isNetworkAvailable(){
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 }
 

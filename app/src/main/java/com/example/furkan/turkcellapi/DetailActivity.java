@@ -1,11 +1,15 @@
 package com.example.furkan.turkcellapi;
 
 import android.app.ProgressDialog;
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.webkit.WebView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -42,9 +46,12 @@ public class DetailActivity extends AppCompatActivity {
 
             title.setText(receivedTitle);
 
-            // making http request to TURKCELL API with given id parameter
-            new JSONTask().execute("https://gelecegiyazanlar.turkcell.com.tr/gypservis/article_content/retrieve?nodeID=" + receivedID);
-
+            if(isNetworkAvailable()){
+                // making http request to TURKCELL API with given id parameter
+                new JSONTask().execute("https://gelecegiyazanlar.turkcell.com.tr/gypservis/article_content/retrieve?nodeID=" + receivedID);
+            }else{
+                Toast.makeText(this, "Lütfen internet bağlantınızı kontrol edin.", Toast.LENGTH_LONG).show();
+            }
         }else{
             title.setText("Hata, lütfen uygulamayı yeniden başlatın.");
         }
@@ -165,5 +172,16 @@ public class DetailActivity extends AppCompatActivity {
             webView.loadData(result, "text/html; charset=UTF-8", null);
 
         }
+    }
+
+    /**
+     * This methods checks the device network availability.
+     *
+     * @return true if device is connected to the internet
+     */
+    public boolean isNetworkAvailable(){
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 }
