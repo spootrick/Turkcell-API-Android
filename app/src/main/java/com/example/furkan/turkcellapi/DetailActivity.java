@@ -55,7 +55,6 @@ public class DetailActivity extends AppCompatActivity {
         }else{
             title.setText("Hata, lütfen uygulamayı yeniden başlatın.");
         }
-
     }
 
     /**
