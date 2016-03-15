@@ -8,4 +8,4 @@ Screenshots of the app:
 ![Refresh button](/screenshots/Screenshot_2016-03-15-00-11-01.png)
 ![Main screen](/screenshots/Screenshot_2016-03-15-00-11-44.png)
 ![Loading content screen](/screenshots/Screenshot_2016-03-15-00-11-57.png)
-![Content screen](/screenshots/Screenshot_2016-03-15-00-12-19.png)
+![Content screen](/screenshots/Screenshot_2016-03-15-19-48-37.png)
